@@ -3,7 +3,6 @@ import torch
 import cv2
 import det
 
-
 # вычисляет пересечение над объединением (Intersection over Union)
 def IoU(bbox1, bbox2):
   box1 = cxcywh_to_xyxy(bbox1)
@@ -33,10 +32,12 @@ def IoU(bbox1, bbox2):
   return intersection_area / (union_area + 1e-6)
 
 # нормализует координаты
-def denorm_coords(bbox, w, h): return bbox * torch.tensor([w, h, w, h])
+def denorm_coords(bbox, w, h): 
+  return bbox * torch.tensor([w, h, w, h])
 
 # денормализует координаты
-def norm_coords(bbox, w, h): return bbox / torch.tensor([w, h, w, h])
+def norm_coords(bbox, w, h): 
+  return bbox / torch.tensor([w, h, w, h])
 
 def cxcywh_to_xyxy(coords):
   coords = coords.clone()

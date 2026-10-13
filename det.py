@@ -10,13 +10,13 @@ import torch.nn as nn
 import utils
 from model import BACKBONEModel
 
-NUM_CLASSES = 80 
-NUM_BOXES = 2 
-H_image = 448 
-W_image = 448 
-H_grid = 7 
-W_grid = 7 
-EPOCHS = 300
+NUM_CLASSES = 80 # количество классов
+NUM_BOXES = 2 # количество предсказанных ограничивающих рамок
+H_image = 448 # высота изображения
+W_image = 448 # ширины изображения
+H_grid = 7 # количество клеток по оси Y
+W_grid = 7 # количество клеток по оси X
+EPOCHS = 300 
 
 class SetNoob(data.Dataset):
   def __init__(self, pathto_dset, namedset, train=True, transforms=None):
@@ -42,6 +42,7 @@ class SetNoob(data.Dataset):
             for val in t.split(' '): 
               if val != '': ar.append(float(val))
             if ar: labels.append(ar)
+
     labels = torch.tensor(labels)
     image = Image.open(os.path.join(self.images,image)).convert('RGB')
     w, h = image.size
@@ -50,8 +51,7 @@ class SetNoob(data.Dataset):
       image, labels[:, 1:] = self.transforms(image, bbox)
       labels[:, 1:] = utils.norm_coords(bbox, w, h)
 
-    # создание сетки 7x7 
-    target=torch.zeros(7, 7, NUM_BOXES * 5 + NUM_CLASSES)
+    # подготовка меток
     class_ids = labels[:, 0].to(torch.int32)
     labels=torch.cat([
       labels,
@@ -61,7 +61,8 @@ class SetNoob(data.Dataset):
       NUM_CLASSES)], dim=1)[:, 1:]
     for i, ax in enumerate(labels): ax[10+class_ids[i]] = 1
 
-    # запись в оси X и Y сетки 
+    # создание сетки H_grid, W_grid и запись в оси X и Y сетки 
+    target=torch.zeros(7, 7, NUM_BOXES * 5 + NUM_CLASSES)
     cell_x = torch.floor(labels[:, 0] * W_grid).to(torch.int32) 
     cell_y = torch.floor(labels[:, 1] * H_grid).to(torch.int32)
     target[cell_x, cell_y] = labels
